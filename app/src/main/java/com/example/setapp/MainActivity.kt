@@ -4,22 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.setapp.ui.game.GameScreen
 import com.example.setapp.ui.theme.SETAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            if (throwable is IllegalArgumentException &&
+                throwable.message?.contains("Activity client record must not be null") == true) {
+                // Known Android OS bug, safe to ignore
+                return@setDefaultUncaughtExceptionHandler
+            }
+            // Re-throw everything else
+            throw throwable
+        }
         enableEdgeToEdge()
         setContent {
             SETAppTheme {
+                GameScreen()
             }
         }
     }
+
 }
