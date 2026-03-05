@@ -110,7 +110,7 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
                 currentState.selectedCards + cardId
             }
 
-            val result = if (newSelected.size == 3) {
+            if (newSelected.size == 3) {
                 val selectedCardsList = currentState.cardsOnTable.filter { it.id in newSelected }
                 if (selectedCardsList.size == 3 && SetEvaluator.isSet(
                         selectedCardsList[0],
@@ -124,14 +124,17 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
                     }
                     newState
                 } else {
-                    currentState.copy(selectedCards = newSelected)
+                    // Not a set - deselect all and increment wrongSetTrigger
+                    currentState.copy(
+                        selectedCards = emptySet(),
+                        wrongSetTrigger = currentState.wrongSetTrigger + 1
+                    )
                 }
             } else if (newSelected.size > 3) {
                 currentState.copy(selectedCards = setOf(cardId))
             } else {
                 currentState.copy(selectedCards = newSelected)
             }
-            result
         }
         saveState()
     }
@@ -212,5 +215,6 @@ data class GameUiState(
     val cardsRemainingInDeck: Int = 0,
     val isGameOver: Boolean = false,
     val isPaused: Boolean = false,
-    val currentTimeSeconds: Long = 0
+    val currentTimeSeconds: Long = 0,
+    val wrongSetTrigger: Int = 0
 )

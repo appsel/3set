@@ -9,7 +9,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -36,43 +35,52 @@ fun CardView(
         else -> Color(0xFF800080) // Purple
     }
 
-    Card(
+    // The container Box has a fixed aspect ratio
+    Box(
         modifier = modifier
-            .padding(4.dp)
-            .aspectRatio(1.6f) // Landscape card
-            .then(
-                if (isSelected) Modifier.shadow(
-                    elevation = 12.dp,
-                    shape = RoundedCornerShape(8.dp),
-                    spotColor = lightYellow,
-                    ambientColor = lightYellow
-                ) else Modifier
-            )
-            .border(
-                width = if (isSelected) 4.dp else 1.dp,
-                color = if (isSelected) lightYellow else Color.LightGray,
-                shape = RoundedCornerShape(8.dp)
-            ),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        onClick = onClick,
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 0.dp else 2.dp)
+            .padding(2.dp) // Grid spacing
+            .aspectRatio(1.6f),
+        contentAlignment = Alignment.Center
     ) {
-        // Center the shapes horizontally and vertically
-        Row(
-            modifier = Modifier.fillMaxSize().padding(4.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        // Draw the border in the background area of the Box
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .border(
+                        width = 4.dp,
+                        color = lightYellow,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            )
+        }
+
+        // The Card is always padded by 5dp. 
+        // When selected, the 4dp border fits perfectly into this 5dp gap.
+        Card(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp), 
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            onClick = onClick,
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            repeat(card.number + 1) { index ->
-                ShapePainter(
-                    modifier = Modifier.size(width = 20.dp, height = 40.dp),
-                    shapeType = card.shape,
-                    shadingType = card.shading,
-                    color = cardColor
-                )
-                // Add spacing between shapes
-                if (index < card.number) {
-                    Spacer(modifier = Modifier.width(6.dp))
+            Row(
+                modifier = Modifier.fillMaxSize().padding(4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(card.number + 1) { index ->
+                    ShapePainter(
+                        modifier = Modifier.size(width = 20.dp, height = 40.dp),
+                        shapeType = card.shape,
+                        shadingType = card.shading,
+                        color = cardColor
+                    )
+                    if (index < card.number) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
                 }
             }
         }
@@ -121,7 +129,6 @@ fun ShapePainter(
 private fun getDiamondPath(size: Size): Path = Path().apply {
     val w = size.width
     val h = size.height
-
     moveTo(w * 0.4958f, 0f)
     lineTo(0f, h * 0.4996f)
     lineTo(w * 0.4979f, h)
@@ -132,7 +139,6 @@ private fun getDiamondPath(size: Size): Path = Path().apply {
 private fun getStadiumPath(size: Size): Path = Path().apply {
     val w = size.width
     val h = size.height
-
     moveTo(w * 0.0000f, h * 0.2215f)
     cubicTo(w * 0.0000f, h * 0.1012f, w * 0.2127f, h * 0.0000f, w * 0.4659f, h * 0.0000f)
     lineTo(w * 0.5341f, h * 0.0000f)
@@ -148,45 +154,14 @@ private fun getStadiumPath(size: Size): Path = Path().apply {
 private fun getSquigglePath(size: Size): Path = Path().apply {
     val w = size.width
     val h = size.height
-
     moveTo(w * 0.3242f, h * 0.0043f)
-
-    cubicTo(
-        w * 0.5615f, h * -0.0135f,
-        w * 0.9135f, h * 0.0218f,
-        w * 0.9886f, h * 0.1599f
-    )
-    cubicTo(
-        w * 1.0637f, h * 0.2980f,
-        w * 0.7424f, h * 0.5877f,
-        w * 0.7412f, h * 0.7021f
-    )
-    cubicTo(
-        w * 0.7663f, h * 0.8530f,
-        w * 1.2013f, h * 0.9351f,
-        w * 0.8638f, h * 0.9824f
-    )
-    cubicTo(
-        w * 0.5263f, h * 1.0298f,
-        w * 0.1714f, h * 0.9775f,
-        w * 0.0747f, h * 0.8713f
-    )
-    cubicTo(
-        w * -0.0220f, h * 0.7652f,
-        w * 0.3452f, h * 0.5531f,
-        w * 0.3280f, h * 0.3730f
-    )
-    cubicTo(
-        w * 0.3109f, h * 0.1929f,
-        w * 0.2080f, h * 0.1869f,
-        w * 0.0557f, h * 0.1606f
-    )
-    cubicTo(
-        w * -0.0966f, h * 0.1343f,
-        w * 0.0869f, h * 0.0221f,
-        w * 0.3242f, h * 0.0043f
-    )
-
+    cubicTo(w * 0.5615f, h * -0.0135f, w * 0.9135f, h * 0.0218f, w * 0.9886f, h * 0.1599f)
+    cubicTo(w * 1.0637f, h * 0.2980f, w * 0.7424f, h * 0.5877f, w * 0.7412f, h * 0.7021f)
+    cubicTo(w * 0.7663f, h * 0.8530f, w * 1.2013f, h * 0.9351f, w * 0.8638f, h * 0.9824f)
+    cubicTo(w * 0.5263f, h * 1.0298f, w * 0.1714f, h * 0.9775f, w * 0.0747f, h * 0.8713f)
+    cubicTo(w * -0.0220f, h * 0.7652f, w * 0.3452f, h * 0.5531f, w * 0.3280f, h * 0.3730f)
+    cubicTo(w * 0.3109f, h * 0.1929f, w * 0.2080f, h * 0.1869f, w * 0.0557f, h * 0.1606f)
+    cubicTo(w * -0.0966f, h * 0.1343f, w * 0.0869f, h * 0.0221f, w * 0.3242f, h * 0.0043f)
     close()
 }
 
@@ -199,17 +174,5 @@ fun CardViewPreview() {
         CardView(card = SetCard(2, 1, 1, 1, 1), modifier = Modifier.width(150.dp))
         Spacer(Modifier.height(8.dp))
         CardView(card = SetCard(3, 2, 2, 2, 2), modifier = Modifier.width(150.dp), isSelected = true)
-    }
-}
-
-@Preview(showBackground = true, name = "Squiggle Detail")
-@Composable
-fun SquiggleDetailPreview() {
-    Box(modifier = Modifier.padding(20.dp)) {
-        // Large detail of 2 Purple Striped Squiggles
-        CardView(
-            card = SetCard(id = 100, shape = 1, color = 2, shading = 1, number = 1),
-            modifier = Modifier.width(220.dp)
-        )
     }
 }

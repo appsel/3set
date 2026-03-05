@@ -11,18 +11,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.setapp.ui.components.CardView
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,6 +35,17 @@ fun GameScreen(
     viewModel: GameViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val haptic = LocalHapticFeedback.current
+
+    // Observe wrongSetTrigger to perform vibrations
+    LaunchedEffect(uiState.wrongSetTrigger) {
+        if (uiState.wrongSetTrigger > 0) {
+            delay(50)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            delay(127)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -42,11 +57,13 @@ fun GameScreen(
                     ) 
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.togglePause() }) {
-                        Icon(
-                            imageVector = Icons.Default.Pause,
-                            contentDescription = "Pause"
-                        )
+                    if (!uiState.isGameOver) {
+                        IconButton(onClick = { viewModel.togglePause() }) {
+                            Icon(
+                                imageVector = Icons.Default.Pause,
+                                contentDescription = "Pause"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -129,7 +146,7 @@ fun PausedView(onDismiss: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
             // Fix: Explicitly disable ripple to avoid IndicationNodeFactory crash
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -142,14 +159,14 @@ fun PausedView(onDismiss: () -> Unit) {
             Text(
                 text = "paused",
                 style = MaterialTheme.typography.displayLarge,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "tap anywhere to continue",
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
     }
@@ -184,18 +201,20 @@ fun GameOverView(
             text = "game over",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = "sets found: $score",
-            fontSize = 24.sp
+            fontSize = 24.sp,
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "time: $finalTimeText",
             fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(32.dp))
