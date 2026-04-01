@@ -57,7 +57,7 @@ fun GameScreen(
                     ) 
                 },
                 actions = {
-                    if (!uiState.isGameOver) {
+                    if (!uiState.isGameOver && !uiState.isPaused) {
                         IconButton(onClick = { viewModel.togglePause() }) {
                             Icon(
                                 imageVector = Icons.Default.Pause,
@@ -160,31 +160,12 @@ fun PausedView(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            // Fix: Explicitly disable ripple to avoid IndicationNodeFactory crash
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onDismiss
             )
     ) {
-        // Zen toggle section at the top middle
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Switch(
-                checked = isZenMode,
-                onCheckedChange = onZenModeToggle
-            )
-            Text(
-                text = "zen mode",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-
         // Center text section
         Column(
             modifier = Modifier.align(Alignment.Center),
@@ -201,6 +182,38 @@ fun PausedView(
                 text = "tap anywhere to continue",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        // Zen toggle section at the bottom center
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 64.dp)
+                // Consume clicks to prevent dismissing the pause screen when toggling
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { /* Do nothing */ }
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "normal",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (!isZenMode) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Switch(
+                checked = isZenMode,
+                onCheckedChange = onZenModeToggle
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "zen",
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (isZenMode) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             )
         }
     }
