@@ -1,6 +1,5 @@
 package com.example.setapp.ui.game
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.setapp.domain.logic.Deck
@@ -14,43 +13,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel() {
+class GameViewModel : ViewModel() {
 
-    private val _uiState = MutableStateFlow(loadInitialState())
+    private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
-    private var deck: MutableList<Card> = savedStateHandle.get<List<Card>>(KEY_DECK)?.toMutableList() ?: mutableListOf()
+    private var deck: MutableList<Card> = mutableListOf()
     private var timerJob: Job? = null
 
     init {
-        if (_uiState.value.cardsOnTable.isEmpty() && !_uiState.value.isGameOver) {
-            startNewGame()
-        } else if (!_uiState.value.isPaused && !_uiState.value.isGameOver) {
-            startTimer()
-        }
-    }
-
-    private fun loadInitialState(): GameUiState {
-        return GameUiState(
-            cardsOnTable = savedStateHandle[KEY_CARDS_ON_TABLE] ?: emptyList(),
-            selectedCards = savedStateHandle[KEY_SELECTED_CARDS] ?: emptySet(),
-            score = savedStateHandle[KEY_SCORE] ?: 0,
-            cardsRemainingInDeck = savedStateHandle[KEY_REMAINING] ?: 0,
-            isGameOver = savedStateHandle[KEY_GAME_OVER] ?: false,
-            isPaused = savedStateHandle[KEY_PAUSED] ?: false,
-            currentTimeSeconds = savedStateHandle[KEY_TIME] ?: 0
-        )
-    }
-
-    private fun saveState() {
-        savedStateHandle[KEY_CARDS_ON_TABLE] = _uiState.value.cardsOnTable
-        savedStateHandle[KEY_SELECTED_CARDS] = _uiState.value.selectedCards
-        savedStateHandle[KEY_SCORE] = _uiState.value.score
-        savedStateHandle[KEY_REMAINING] = _uiState.value.cardsRemainingInDeck
-        savedStateHandle[KEY_GAME_OVER] = _uiState.value.isGameOver
-        savedStateHandle[KEY_PAUSED] = _uiState.value.isPaused
-        savedStateHandle[KEY_TIME] = _uiState.value.currentTimeSeconds
-        savedStateHandle[KEY_DECK] = deck.toList()
+        startNewGame()
     }
 
     fun startNewGame() {
@@ -71,7 +43,6 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
             cardsRemainingInDeck = deck.size,
             currentTimeSeconds = 0
         )
-        saveState()
         startTimer()
     }
 
@@ -81,7 +52,6 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
             while (true) {
                 delay(1000)
                 _uiState.update { it.copy(currentTimeSeconds = it.currentTimeSeconds + 1) }
-                saveState()
             }
         }
     }
@@ -92,7 +62,6 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
 
     fun togglePause() {
         _uiState.update { it.copy(isPaused = !it.isPaused) }
-        saveState()
         if (_uiState.value.isPaused) {
             stopTimer()
         } else {
@@ -136,7 +105,6 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
                 currentState.copy(selectedCards = newSelected)
             }
         }
-        saveState()
     }
 
     private fun calculateNewStateAfterSet(currentState: GameUiState, selectedIds: Set<Int>): GameUiState {
@@ -194,17 +162,6 @@ class GameViewModel(private val savedStateHandle: SavedStateHandle) : ViewModel(
     override fun onCleared() {
         super.onCleared()
         stopTimer()
-    }
-
-    companion object {
-        private const val KEY_CARDS_ON_TABLE = "cards_on_table"
-        private const val KEY_SELECTED_CARDS = "selected_cards"
-        private const val KEY_SCORE = "score"
-        private const val KEY_REMAINING = "remaining"
-        private const val KEY_GAME_OVER = "game_over"
-        private const val KEY_PAUSED = "paused"
-        private const val KEY_TIME = "time"
-        private const val KEY_DECK = "deck"
     }
 }
 
