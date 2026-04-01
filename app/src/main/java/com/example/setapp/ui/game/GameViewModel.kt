@@ -38,12 +38,18 @@ class GameViewModel : ViewModel() {
 
         val cardsWithSet = ensureSetOnTable(initialCards)
 
-        _uiState.value = GameUiState(
+        _uiState.value = _uiState.value.copy(
             cardsOnTable = cardsWithSet,
+            selectedCards = emptySet(),
+            score = 0,
             cardsRemainingInDeck = deck.size,
+            isGameOver = false,
             currentTimeSeconds = 0
         )
-        startTimer()
+        // Keep isPaused state as is to prevent auto-closing pause screen
+        if (!_uiState.value.isPaused) {
+            startTimer()
+        }
     }
 
     private fun startTimer() {
@@ -67,6 +73,11 @@ class GameViewModel : ViewModel() {
         } else {
             startTimer()
         }
+    }
+
+    fun toggleZenMode(enabled: Boolean) {
+        _uiState.update { it.copy(isZenMode = enabled) }
+        startNewGame()
     }
 
     fun onCardClicked(cardId: Int) {
@@ -107,10 +118,24 @@ class GameViewModel : ViewModel() {
         }
     }
 
+    private fun replenishDeckIfNeeded(currentCardsOnTable: List<Card>) {
+        if (!_uiState.value.isZenMode) return
+        if (deck.size + currentCardsOnTable.size <= 18) {
+            val allCards = Deck.generateFullDeck()
+            val inPlayIds = (currentCardsOnTable.map { it.id } + deck.map { it.id }).toSet()
+            val freshCards = allCards.filter { it.id !in inPlayIds }.shuffled()
+            deck.addAll(freshCards)
+        }
+    }
+
     private fun calculateNewStateAfterSet(currentState: GameUiState, selectedIds: Set<Int>): GameUiState {
         val newCardsOnTable = currentState.cardsOnTable.toMutableList()
         val indicesToRemove = newCardsOnTable.indices.filter { newCardsOnTable[it].id in selectedIds }
         
+        // Temporarily remove cards to check for replenishment
+        val cardsAfterRemoval = newCardsOnTable.filter { it.id !in selectedIds }
+        replenishDeckIfNeeded(cardsAfterRemoval)
+
         if (newCardsOnTable.size <= 12 && deck.isNotEmpty()) {
             indicesToRemove.forEach { index ->
                 if (deck.isNotEmpty()) {
@@ -131,13 +156,19 @@ class GameViewModel : ViewModel() {
             selectedCards = emptySet(),
             score = currentState.score + 1,
             cardsRemainingInDeck = deck.size,
-            isGameOver = deck.isEmpty() && !setsAvailable
+            isGameOver = if (currentState.isZenMode) false else (deck.isEmpty() && !setsAvailable)
         )
     }
 
     private fun ensureSetOnTable(currentCards: List<Card>): List<Card> {
         val cards = currentCards.toMutableList()
-        while (!hasSetOnTable(cards) && deck.isNotEmpty()) {
+        while (!hasSetOnTable(cards)) {
+            if (_uiState.value.isZenMode) {
+                replenishDeckIfNeeded(cards)
+            }
+            
+            if (deck.isEmpty()) break
+
             repeat(3) {
                 if (deck.isNotEmpty()) {
                     cards.add(deck.removeAt(0))
@@ -173,5 +204,6 @@ data class GameUiState(
     val isGameOver: Boolean = false,
     val isPaused: Boolean = false,
     val currentTimeSeconds: Long = 0,
-    val wrongSetTrigger: Int = 0
+    val wrongSetTrigger: Int = 0,
+    val isZenMode: Boolean = false
 )

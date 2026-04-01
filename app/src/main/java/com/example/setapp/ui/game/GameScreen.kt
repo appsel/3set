@@ -100,16 +100,20 @@ fun GameScreen(
                     }
                 }
 
-                val minutes = uiState.currentTimeSeconds / 60
-                val seconds = uiState.currentTimeSeconds % 60
-                val timeText = String.format(Locale.US, "%02d:%02d", minutes, seconds)
-                
-                Text(
-                    text = timeText,
-                    style = MaterialTheme.typography.displayLarge,
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold
-                )
+                if (!uiState.isZenMode) {
+                    val minutes = uiState.currentTimeSeconds / 60
+                    val seconds = uiState.currentTimeSeconds % 60
+                    val timeText = String.format(Locale.US, "%02d:%02d", minutes, seconds)
+                    
+                    Text(
+                        text = timeText,
+                        style = MaterialTheme.typography.displayLarge,
+                        modifier = Modifier.padding(16.dp),
+                        fontWeight = FontWeight.Bold
+                    )
+                } else {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 Text(
                     text = "sets found: ${uiState.score}",
@@ -118,8 +122,9 @@ fun GameScreen(
                     fontWeight = FontWeight.Bold
                 )
 
+                val remainingDisplay = if (uiState.isZenMode) "∞" else uiState.cardsRemainingInDeck.toString()
                 Text(
-                    text = "cards remaining: ${uiState.cardsRemainingInDeck}",
+                    text = "cards remaining: $remainingDisplay",
                     modifier = Modifier.padding(8.dp),
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -127,7 +132,11 @@ fun GameScreen(
 
             // Overlays
             if (uiState.isPaused) {
-                PausedView(onDismiss = { viewModel.togglePause() })
+                PausedView(
+                    isZenMode = uiState.isZenMode,
+                    onZenModeToggle = { viewModel.toggleZenMode(it) },
+                    onDismiss = { viewModel.togglePause() }
+                )
             }
 
             if (uiState.isGameOver) {
@@ -142,7 +151,11 @@ fun GameScreen(
 }
 
 @Composable
-fun PausedView(onDismiss: () -> Unit) {
+fun PausedView(
+    isZenMode: Boolean,
+    onZenModeToggle: (Boolean) -> Unit,
+    onDismiss: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -152,10 +165,31 @@ fun PausedView(onDismiss: () -> Unit) {
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onDismiss
-            ),
-        contentAlignment = Alignment.Center
+            )
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // Zen toggle section at the top middle
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Switch(
+                checked = isZenMode,
+                onCheckedChange = onZenModeToggle
+            )
+            Text(
+                text = "zen mode",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        // Center text section
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
                 text = "paused",
                 style = MaterialTheme.typography.displayLarge,
@@ -233,5 +267,9 @@ fun GameOverView(
 @Preview(showBackground = true)
 @Composable
 fun PausedViewPreview() {
-    PausedView(onDismiss = {})
+    PausedView(
+        isZenMode = false,
+        onZenModeToggle = {},
+        onDismiss = {}
+    )
 }
