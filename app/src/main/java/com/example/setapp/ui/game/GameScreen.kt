@@ -47,105 +47,107 @@ fun GameScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { 
-                    Text(
-                        "SET",
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                actions = {
-                    if (!uiState.isGameOver && !uiState.isPaused) {
-                        IconButton(onClick = { viewModel.togglePause() }) {
-                            Icon(
-                                imageVector = Icons.Default.Pause,
-                                contentDescription = "Pause"
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { 
+                        Text(
+                            "SET",
+                            fontWeight = FontWeight.Bold
+                        ) 
+                    },
+                    actions = {
+                        if (!uiState.isGameOver && !uiState.isPaused) {
+                            IconButton(onClick = { viewModel.togglePause() }) {
+                                Icon(
+                                    imageVector = Icons.Default.Pause,
+                                    contentDescription = "Pause"
+                                )
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
+                        actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        contentPadding = PaddingValues(8.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        items(
+                            items = uiState.cardsOnTable,
+                            key = { card -> card.id }
+                        ) { card ->
+                            CardView(
+                                card = card,
+                                isSelected = uiState.selectedCards.contains(card.id),
+                                onClick = { viewModel.onCardClicked(card.id) }
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(3),
-                    contentPadding = PaddingValues(8.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(
-                        items = uiState.cardsOnTable,
-                        key = { card -> card.id }
-                    ) { card ->
-                        CardView(
-                            card = card,
-                            isSelected = uiState.selectedCards.contains(card.id),
-                            onClick = { viewModel.onCardClicked(card.id) }
-                        )
-                    }
-                }
 
-                if (!uiState.isZenMode) {
-                    val minutes = uiState.currentTimeSeconds / 60
-                    val seconds = uiState.currentTimeSeconds % 60
-                    val timeText = String.format(Locale.US, "%02d:%02d", minutes, seconds)
-                    
+                    if (!uiState.isZenMode) {
+                        val minutes = uiState.currentTimeSeconds / 60
+                        val seconds = uiState.currentTimeSeconds % 60
+                        val timeText = String.format(Locale.US, "%02d:%02d", minutes, seconds)
+                        
+                        Text(
+                            text = timeText,
+                            style = MaterialTheme.typography.displayLarge,
+                            modifier = Modifier.padding(16.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
                     Text(
-                        text = timeText,
-                        style = MaterialTheme.typography.displayLarge,
-                        modifier = Modifier.padding(16.dp),
+                        text = "sets found: ${uiState.score}",
+                        modifier = Modifier.padding(end = 16.dp),
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
-                } else {
-                    Spacer(modifier = Modifier.height(16.dp))
+
+                    val remainingDisplay = if (uiState.isZenMode) "∞" else uiState.cardsRemainingInDeck.toString()
+                    Text(
+                        text = "cards remaining: $remainingDisplay",
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
-
-                Text(
-                    text = "sets found: ${uiState.score}",
-                    modifier = Modifier.padding(end = 16.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                val remainingDisplay = if (uiState.isZenMode) "∞" else uiState.cardsRemainingInDeck.toString()
-                Text(
-                    text = "cards remaining: $remainingDisplay",
-                    modifier = Modifier.padding(8.dp),
-                    style = MaterialTheme.typography.bodySmall
-                )
             }
+        }
 
-            // Overlays
-            if (uiState.isPaused) {
-                PausedView(
-                    isZenMode = uiState.isZenMode,
-                    onZenModeToggle = { viewModel.toggleZenMode(it) },
-                    onDismiss = { viewModel.togglePause() }
-                )
-            }
+        // Overlays outside Scaffold to cover the entire screen including TopBar
+        if (uiState.isPaused) {
+            PausedView(
+                isZenMode = uiState.isZenMode,
+                onZenModeToggle = { viewModel.toggleZenMode(it) },
+                onDismiss = { viewModel.togglePause() }
+            )
+        }
 
-            if (uiState.isGameOver) {
-                GameOverView(
-                    score = uiState.score,
-                    finalTimeSeconds = uiState.currentTimeSeconds,
-                    onRestart = { viewModel.startNewGame() }
-                )
-            }
+        if (uiState.isGameOver) {
+            GameOverView(
+                score = uiState.score,
+                finalTimeSeconds = uiState.currentTimeSeconds,
+                onRestart = { viewModel.startNewGame() }
+            )
         }
     }
 }
