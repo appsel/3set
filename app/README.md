@@ -36,12 +36,6 @@ A modern, high-performance Android implementation of the classic **SET** card ga
 3.  Ensure you are using **JDK 11** or higher.
 4.  Build and deploy to any device running **Android 7.0 (API 24)** or newer.
 
-## Credits
-This project uses graphics from [Set with Friends](https://setwithfriends.com)
-by Eric Zhang and Cynthia Du, used under the MIT License.
-See THIRD_PARTY_NOTICES.txt for details.
+## 📄 License
 
-This project is not affiliated with Set Enterprises, Inc. or the SET® card game.
-(You can buy the real game here: https://www.amazon.co.uk/PlayMonster-GS001-SET/dp/B0C6MZ7157?source=ps-sl-shoppingads-lpcontext&ref_=fplfs&psc=1&smid=A3P5ROKL5A1OLE)
-
-All other code is copyright appsel, all rights reserved.
+Open-source project created for the love of SET. Feel free to fork and modify!
