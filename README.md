@@ -35,3 +35,12 @@ A modern, high-performance Android implementation of the classic **SET** card ga
 2.  Open in **Android Studio**.
 3.  Ensure you are using **JDK 11** or higher.
 4.  Build and deploy to any device running **Android 7.0 (API 24)** or newer.
+
+## Credits
+This project uses graphics from [Set with Friends](https://setwithfriends.com)
+by Eric Zhang and Cynthia Du, used under the MIT License.
+See THIRD_PARTY_NOTICES.txt for details.
+
+This project is not affiliated with Set Enterprises, Inc. or the SET® card game.
+
+All other code is copyright appsel, all rights reserved.
