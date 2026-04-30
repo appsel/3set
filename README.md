@@ -35,7 +35,3 @@ A modern, high-performance Android implementation of the classic **SET** card ga
 2.  Open in **Android Studio**.
 3.  Ensure you are using **JDK 11** or higher.
 4.  Build and deploy to any device running **Android 7.0 (API 24)** or newer.
-
-## 📄 License
-
-Open-source project created for the love of SET. Feel free to fork and modify!
