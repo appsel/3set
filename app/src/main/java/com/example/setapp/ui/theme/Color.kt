@@ -1,4 +1,4 @@
-package com.example.setapp.ui.theme
+package com.example.threeSet.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

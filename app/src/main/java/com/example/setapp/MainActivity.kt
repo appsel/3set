@@ -1,11 +1,11 @@
-package com.example.setapp
+package com.example.threeSet
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.setapp.ui.game.GameScreen
-import com.example.setapp.ui.theme.SETAppTheme
+import com.example.threeSet.ui.game.GameScreen
+import com.example.threeSet.ui.theme.SETAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

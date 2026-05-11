@@ -1,13 +1,13 @@
-package com.example.setapp.ui.game
+package com.example.threeSet.ui.game
 
 import android.app.Application
 import android.content.Context
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.setapp.domain.logic.Deck
-import com.example.setapp.domain.logic.SetEvaluator
-import com.example.setapp.domain.model.Card
+import com.example.threeSet.domain.logic.Deck
+import com.example.threeSet.domain.logic.SetEvaluator
+import com.example.threeSet.domain.model.Card
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow

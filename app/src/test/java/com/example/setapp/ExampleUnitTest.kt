@@ -1,4 +1,4 @@
-package com.example.setapp
+package com.example.threeSet
 
 import org.junit.Test
 

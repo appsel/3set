@@ -1,4 +1,4 @@
-package com.example.setapp.ui.theme
+package com.example.threeSet.ui.theme
 
 import android.app.Activity
 import android.os.Build

@@ -1,4 +1,4 @@
-package com.example.setapp.domain.model
+package com.example.threeSet.domain.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

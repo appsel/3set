@@ -1,4 +1,4 @@
-package com.example.setapp.ui.game
+package com.example.threeSet.ui.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.setapp.ui.components.CardView
+import com.example.threeSet.ui.components.CardView
 import kotlinx.coroutines.delay
 import java.util.Locale
 

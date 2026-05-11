@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.setapp"
+    namespace = "com.example.threeSet"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.setapp"
+        applicationId = "com.example.threeSet"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

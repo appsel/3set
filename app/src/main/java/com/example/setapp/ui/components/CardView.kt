@@ -1,4 +1,4 @@
-package com.example.setapp.ui.components
+package com.example.threeSet.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.setapp.domain.model.Card as SetCard
+import com.example.threeSet.domain.model.Card as SetCard
 import androidx.compose.ui.geometry.Size
 
 @Composable

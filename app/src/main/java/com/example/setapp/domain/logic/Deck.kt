@@ -1,6 +1,6 @@
-package com.example.setapp.domain.logic
+package com.example.threeSet.domain.logic
 
-import com.example.setapp.domain.model.Card
+import com.example.threeSet.domain.model.Card
 
 object Deck {
     fun generateFullDeck(): List<Card> {
