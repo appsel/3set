@@ -116,8 +116,14 @@ fun GameScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
+                    val scoreText = if (uiState.isZenMode) {
+                        "lifetime sets found: ${uiState.zenLifetimeScore}"
+                    } else {
+                        "sets found: ${uiState.score}"
+                    }
+
                     Text(
-                        text = "sets found: ${uiState.score}",
+                        text = scoreText,
                         modifier = Modifier.padding(end = 16.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold

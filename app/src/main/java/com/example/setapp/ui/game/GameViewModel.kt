@@ -1,6 +1,9 @@
 package com.example.setapp.ui.game
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import androidx.core.content.edit
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.setapp.domain.logic.Deck
 import com.example.setapp.domain.logic.SetEvaluator
@@ -13,9 +16,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class GameViewModel : ViewModel() {
+class GameViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _uiState = MutableStateFlow(GameUiState())
+    private val prefs = application.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
+    private val _uiState = MutableStateFlow(GameUiState(
+        zenLifetimeScore = prefs.getInt("zen_lifetime_score", 0)
+    ))
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
 
     private var deck: MutableList<Card> = mutableListOf()
@@ -38,14 +44,16 @@ class GameViewModel : ViewModel() {
 
         val cardsWithSet = ensureSetOnTable(initialCards)
 
-        _uiState.value = _uiState.value.copy(
-            cardsOnTable = cardsWithSet,
-            selectedCards = emptySet(),
-            score = 0,
-            cardsRemainingInDeck = deck.size,
-            isGameOver = false,
-            currentTimeSeconds = 0
-        )
+        _uiState.update { currentState ->
+            currentState.copy(
+                cardsOnTable = cardsWithSet,
+                selectedCards = emptySet(),
+                score = 0,
+                cardsRemainingInDeck = deck.size,
+                isGameOver = false,
+                currentTimeSeconds = 0
+            )
+        }
         // Keep isPaused state as is to prevent auto-closing pause screen
         if (!_uiState.value.isPaused) {
             startTimer()
@@ -151,10 +159,19 @@ class GameViewModel : ViewModel() {
         val cardsWithSet = ensureSetOnTable(newCardsOnTable)
         val setsAvailable = hasSetOnTable(cardsWithSet)
 
+        val newZenLifetimeScore = if (currentState.isZenMode) {
+            val updated = currentState.zenLifetimeScore + 1
+            prefs.edit { putInt("zen_lifetime_score", updated) }
+            updated
+        } else {
+            currentState.zenLifetimeScore
+        }
+
         return currentState.copy(
             cardsOnTable = cardsWithSet,
             selectedCards = emptySet(),
             score = currentState.score + 1,
+            zenLifetimeScore = newZenLifetimeScore,
             cardsRemainingInDeck = deck.size,
             isGameOver = if (currentState.isZenMode) false else (deck.isEmpty() && !setsAvailable)
         )
@@ -205,5 +222,6 @@ data class GameUiState(
     val isPaused: Boolean = false,
     val currentTimeSeconds: Long = 0,
     val wrongSetTrigger: Int = 0,
-    val isZenMode: Boolean = false
+    val isZenMode: Boolean = false,
+    val zenLifetimeScore: Int = 0
 )
