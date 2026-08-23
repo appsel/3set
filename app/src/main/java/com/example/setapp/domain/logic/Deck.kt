@@ -21,4 +21,14 @@ object Deck {
     fun generateShuffledDeck(): List<Card> {
         return generateFullDeck().shuffled()
     }
+
+    fun generateShuffledDeck(seed: Long): List<Card> {
+        val deck = generateFullDeck().toMutableList()
+        val random = java.util.Random(seed)
+        for (i in deck.lastIndex downTo 1) {
+            val j = random.nextInt(i + 1)
+            deck[i] = deck[j].also { deck[j] = deck[i] }
+        }
+        return deck
+    }
 }

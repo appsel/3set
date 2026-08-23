@@ -14,7 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.threeSet.domain.logic.DeckCode
 import com.example.threeSet.ui.components.CardView
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -144,7 +147,8 @@ fun GameScreen(
             PausedView(
                 isZenMode = uiState.isZenMode,
                 onZenModeToggle = { viewModel.toggleZenMode(it) },
-                onDismiss = { viewModel.togglePause() }
+                onDismiss = { viewModel.togglePause() },
+                onStartWithCode = { viewModel.startGameWithCode(it) }
             )
         }
 
@@ -162,8 +166,11 @@ fun GameScreen(
 fun PausedView(
     isZenMode: Boolean,
     onZenModeToggle: (Boolean) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onStartWithCode: (String) -> Boolean
 ) {
+    var showCodeDialog by remember { mutableStateOf(false) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -224,7 +231,91 @@ fun PausedView(
                 color = if (isZenMode) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             )
         }
+
+        // Drawn last so it sits above the dismiss overlay and stays tappable
+        OutlinedButton(
+            onClick = { showCodeDialog = true },
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(start = 16.dp, top = 8.dp)
+        ) {
+            Text(
+                text = "code",
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
+
+    if (showCodeDialog) {
+        DeckCodeDialog(
+            onDismiss = { showCodeDialog = false },
+            onConfirm = { code ->
+                val success = onStartWithCode(code)
+                if (success) showCodeDialog = false
+                success
+            }
+        )
+    }
+}
+
+@Composable
+fun DeckCodeDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Boolean
+) {
+    var codeInput by remember { mutableStateOf("") }
+    var showError by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("deck code") },
+        text = {
+            Column {
+                Text(
+                    text = "Enter a 6-character Base36 code (0-9, A-Z)",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = codeInput,
+                    onValueChange = { input ->
+                        codeInput = input
+                            .uppercase()
+                            .filter { it in '0'..'9' || it in 'A'..'Z' }
+                            .take(DeckCode.CODE_LENGTH)
+                        showError = false
+                    },
+                    singleLine = true,
+                    isError = showError,
+                    supportingText = if (showError) {
+                        { Text("Invalid code — must be exactly 6 Base36 characters") }
+                    } else null,
+                    placeholder = { Text("ABC123") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (codeInput.length == DeckCode.CODE_LENGTH) {
+                        if (!onConfirm(codeInput)) {
+                            showError = true
+                        }
+                    } else {
+                        showError = true
+                    }
+                }
+            ) {
+                Text("play")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -291,6 +382,7 @@ fun PausedViewPreview() {
     PausedView(
         isZenMode = false,
         onZenModeToggle = {},
-        onDismiss = {}
+        onDismiss = {},
+        onStartWithCode = { false }
     )
 }

@@ -6,6 +6,7 @@ import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.threeSet.domain.logic.Deck
+import com.example.threeSet.domain.logic.DeckCode
 import com.example.threeSet.domain.logic.SetEvaluator
 import com.example.threeSet.domain.model.Card
 import kotlinx.coroutines.Job
@@ -31,9 +32,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         startNewGame()
     }
 
-    fun startNewGame() {
+    fun startNewGame(seed: Long? = null) {
         stopTimer()
-        deck = Deck.generateShuffledDeck().toMutableList()
+        deck = if (seed != null) {
+            Deck.generateShuffledDeck(seed).toMutableList()
+        } else {
+            Deck.generateShuffledDeck().toMutableList()
+        }
         val initialCards = mutableListOf<Card>()
 
         repeat(12) {
@@ -86,6 +91,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleZenMode(enabled: Boolean) {
         _uiState.update { it.copy(isZenMode = enabled) }
         startNewGame()
+    }
+
+    fun startGameWithCode(code: String): Boolean {
+        val seed = DeckCode.decodeOrNull(code) ?: return false
+        startNewGame(seed)
+        _uiState.update { it.copy(isPaused = false) }
+        startTimer()
+        return true
     }
 
     fun onCardClicked(cardId: Int) {
