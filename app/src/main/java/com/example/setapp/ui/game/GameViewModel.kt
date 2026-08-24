@@ -95,6 +95,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startGameWithCode(code: String): Boolean {
         val seed = DeckCode.decodeOrNull(code) ?: return false
+        // Code games are always Normal mode: finite deck + timer (no Zen loop)
+        _uiState.update { it.copy(isZenMode = false) }
         startNewGame(seed)
         _uiState.update { it.copy(isPaused = false) }
         startTimer()

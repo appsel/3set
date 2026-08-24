@@ -39,6 +39,7 @@ fun GameScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val haptic = LocalHapticFeedback.current
+    var pendingDeckCode by remember { mutableStateOf<String?>(null) }
 
     // Observe wrongSetTrigger to perform vibrations
     LaunchedEffect(uiState.wrongSetTrigger) {
@@ -143,12 +144,27 @@ fun GameScreen(
         }
 
         // Overlays outside Scaffold to cover the entire screen including TopBar
-        if (uiState.isPaused) {
+        if (pendingDeckCode != null) {
+            CodeReadyView(
+                code = pendingDeckCode!!,
+                onStart = {
+                    viewModel.startGameWithCode(pendingDeckCode!!)
+                    pendingDeckCode = null
+                }
+            )
+        } else if (uiState.isPaused) {
             PausedView(
                 isZenMode = uiState.isZenMode,
                 onZenModeToggle = { viewModel.toggleZenMode(it) },
                 onDismiss = { viewModel.togglePause() },
-                onStartWithCode = { viewModel.startGameWithCode(it) }
+                onCodeConfirmed = { code ->
+                    if (DeckCode.decodeOrNull(code) != null) {
+                        pendingDeckCode = code
+                        true
+                    } else {
+                        false
+                    }
+                }
             )
         }
 
@@ -167,7 +183,7 @@ fun PausedView(
     isZenMode: Boolean,
     onZenModeToggle: (Boolean) -> Unit,
     onDismiss: () -> Unit,
-    onStartWithCode: (String) -> Boolean
+    onCodeConfirmed: (String) -> Boolean
 ) {
     var showCodeDialog by remember { mutableStateOf(false) }
 
@@ -233,29 +249,72 @@ fun PausedView(
         }
 
         // Drawn last so it sits above the dismiss overlay and stays tappable
-        OutlinedButton(
-            onClick = { showCodeDialog = true },
+        Text(
+            text = "custom",
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.TopEnd)
                 .statusBarsPadding()
-                .padding(start = 16.dp, top = 8.dp)
-        ) {
-            Text(
-                text = "code",
-                fontWeight = FontWeight.Bold
-            )
-        }
+                .padding(end = 16.dp, top = 16.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { showCodeDialog = true }
+                )
+        )
     }
 
     if (showCodeDialog) {
         DeckCodeDialog(
             onDismiss = { showCodeDialog = false },
             onConfirm = { code ->
-                val success = onStartWithCode(code)
+                val success = onCodeConfirmed(code)
                 if (success) showCodeDialog = false
                 success
             }
         )
+    }
+}
+
+@Composable
+fun CodeReadyView(
+    code: String,
+    onStart: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onStart
+            )
+    ) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "code:",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = code,
+                style = MaterialTheme.typography.displayLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "tap to start game",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
     }
 }
 
@@ -269,31 +328,33 @@ fun DeckCodeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("deck code") },
-        text = {
+        title = {
             Column {
+                Text("deck code")
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Enter a 6-character Base36 code (0-9, A-Z)",
+                    text = "enter a 6 character code (0-9, A-Z)",
                     style = MaterialTheme.typography.bodySmall
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = codeInput,
-                    onValueChange = { input ->
-                        codeInput = input
-                            .uppercase()
-                            .filter { it in '0'..'9' || it in 'A'..'Z' }
-                            .take(DeckCode.CODE_LENGTH)
-                        showError = false
-                    },
-                    singleLine = true,
-                    isError = showError,
-                    supportingText = if (showError) {
-                        { Text("Invalid code — must be exactly 6 Base36 characters") }
-                    } else null,
-                    placeholder = { Text("ABC123") }
-                )
             }
+        },
+        text = {
+            OutlinedTextField(
+                value = codeInput,
+                onValueChange = { input ->
+                    codeInput = input
+                        .uppercase()
+                        .filter { it in '0'..'9' || it in 'A'..'Z' }
+                        .take(DeckCode.CODE_LENGTH)
+                    showError = false
+                },
+                singleLine = true,
+                isError = showError,
+                supportingText = if (showError) {
+                    { Text("Invalid code — must be exactly 6 Base36 characters") }
+                } else null,
+                placeholder = { Text("ABC123") }
+            )
         },
         confirmButton = {
             TextButton(
@@ -383,6 +444,6 @@ fun PausedViewPreview() {
         isZenMode = false,
         onZenModeToggle = {},
         onDismiss = {},
-        onStartWithCode = { false }
+        onCodeConfirmed = { false }
     )
 }
