@@ -310,7 +310,7 @@ fun CodeReadyView(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "tap to start game",
+                text = "tap to start",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
