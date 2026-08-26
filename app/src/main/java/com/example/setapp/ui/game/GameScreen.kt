@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.*
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.threeSet.domain.logic.DeckCode
 import com.example.threeSet.ui.components.CardView
@@ -326,57 +328,75 @@ fun DeckCodeDialog(
     var codeInput by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Column {
-                Text("deck code")
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 24.dp
+                )
+            ) {
+                Text(
+                    text = "deck code",
+                    style = MaterialTheme.typography.headlineSmall
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "enter a 6 character code (0-9, A-Z)",
                     style = MaterialTheme.typography.bodySmall
                 )
-            }
-        },
-        text = {
-            OutlinedTextField(
-                value = codeInput,
-                onValueChange = { input ->
-                    codeInput = input
-                        .uppercase()
-                        .filter { it in '0'..'9' || it in 'A'..'Z' }
-                        .take(DeckCode.CODE_LENGTH)
-                    showError = false
-                },
-                singleLine = true,
-                isError = showError,
-                supportingText = if (showError) {
-                    { Text("Invalid code — must be exactly 6 Base36 characters") }
-                } else null,
-                placeholder = { Text("ABC123") }
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (codeInput.length == DeckCode.CODE_LENGTH) {
-                        if (!onConfirm(codeInput)) {
-                            showError = true
-                        }
-                    } else {
-                        showError = true
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = codeInput,
+                    onValueChange = { input ->
+                        codeInput = input
+                            .uppercase()
+                            .filter { it in '0'..'9' || it in 'A'..'Z' }
+                            .take(DeckCode.CODE_LENGTH)
+                        showError = false
+                    },
+                    singleLine = true,
+                    isError = showError,
+                    supportingText = if (showError) {
+                        { Text("Invalid code — must be exactly 6 Base36 characters") }
+                    } else null,
+                    placeholder = { Text("ABC123") }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Text("cancel")
+                    }
+                    TextButton(
+                        onClick = {
+                            if (codeInput.length == DeckCode.CODE_LENGTH) {
+                                if (!onConfirm(codeInput)) {
+                                    showError = true
+                                }
+                            } else {
+                                showError = true
+                            }
+                        },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Text("play")
                     }
                 }
-            ) {
-                Text("play")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("cancel")
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
-    )
+    }
 }
 
 @Composable
