@@ -367,7 +367,7 @@ fun DeckCodeDialog(
                     } else null,
                     placeholder = { Text("ABC123") }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -393,7 +393,7 @@ fun DeckCodeDialog(
                         Text("play")
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
