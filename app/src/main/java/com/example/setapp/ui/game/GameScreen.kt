@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -351,22 +352,39 @@ fun DeckCodeDialog(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = codeInput,
-                    onValueChange = { input ->
-                        codeInput = input
-                            .uppercase()
-                            .filter { it in '0'..'9' || it in 'A'..'Z' }
-                            .take(DeckCode.CODE_LENGTH)
-                        showError = false
-                    },
-                    singleLine = true,
-                    isError = showError,
-                    supportingText = if (showError) {
-                        { Text("Invalid code — must be exactly 6 Base36 characters") }
-                    } else null,
-                    placeholder = { Text("ABC123") }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = codeInput,
+                        onValueChange = { input ->
+                            codeInput = input
+                                .uppercase()
+                                .filter { it in '0'..'9' || it in 'A'..'Z' }
+                                .take(DeckCode.CODE_LENGTH)
+                            showError = false
+                        },
+                        singleLine = true,
+                        isError = showError,
+                        supportingText = if (showError) {
+                            { Text("Invalid code — must be exactly 6 Base36 characters") }
+                        } else null,
+                        placeholder = { Text("ABC123") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(
+                        onClick = {
+                            codeInput = DeckCode.generateRandom()
+                            showError = false
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Casino,
+                            contentDescription = "Generate code"
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),

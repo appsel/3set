@@ -27,4 +27,9 @@ object DeckCode {
         }
         return String(chars)
     }
+
+    fun generateRandom(): String {
+        val maxExclusive = 36L * 36 * 36 * 36 * 36 * 36 // 36^6
+        return encode(kotlin.random.Random.nextLong(maxExclusive))
+    }
 }
