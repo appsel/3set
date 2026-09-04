@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Pause
@@ -21,9 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -285,6 +290,14 @@ fun CodeReadyView(
     code: String,
     onStart: () -> Unit
 ) {
+    val codeTextStyle = MaterialTheme.typography.headlineLarge.copy(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Bold,
+        letterSpacing = 0.sp
+    )
+    // Fixed slot per character so glyph shape (e.g. "1" vs "A") doesn't change spacing
+    val charSlotWidth = 28.dp
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -295,29 +308,42 @@ fun CodeReadyView(
                 onClick = onStart
             )
     ) {
-        Column(
+        // Room code stays fixed at the screen center
+        Row(
             modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "code:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = code,
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "tap to start",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            code.forEach { char ->
+                Box(
+                    modifier = Modifier.width(charSlotWidth),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = char.toString(),
+                        style = codeTextStyle,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
         }
+        // Closer to the code without moving the code itself
+        Text(
+            text = "code:",
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(y = (-34).dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Text(
+            text = "tap to start",
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(y = (40).dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
     }
 }
 
@@ -352,36 +378,71 @@ fun DeckCodeDialog(
                     style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = codeInput,
-                        onValueChange = { input ->
-                            codeInput = input
-                                .uppercase()
-                                .filter { it in '0'..'9' || it in 'A'..'Z' }
-                                .take(DeckCode.CODE_LENGTH)
-                            showError = false
-                        },
-                        singleLine = true,
-                        isError = showError,
-                        supportingText = if (showError) {
-                            { Text("Invalid code — must be exactly 6 Base36 characters") }
-                        } else null,
-                        placeholder = { Text("ABC123") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(
-                        onClick = {
-                            codeInput = DeckCode.generateRandom()
-                            showError = false
-                        }
+                var isInputFocused by remember { mutableStateOf(false) }
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Casino,
-                            contentDescription = "Generate code"
+                        BasicTextField(
+                            value = codeInput,
+                            onValueChange = { input ->
+                                codeInput = input
+                                    .uppercase()
+                                    .filter { it in '0'..'9' || it in 'A'..'Z' }
+                                    .take(DeckCode.CODE_LENGTH)
+                                showError = false
+                            },
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = MaterialTheme.typography.bodyLarge.fontSize
+                            ),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = 8.dp)
+                                .onFocusChanged { isInputFocused = it.isFocused },
+                            decorationBox = { innerTextField ->
+                                Box {
+                                    if (codeInput.isEmpty()) {
+                                        Text(
+                                            text = "ABC123",
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            }
+                        )
+                        IconButton(
+                            onClick = {
+                                codeInput = DeckCode.generateRandom()
+                                showError = false
+                            },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Casino,
+                                contentDescription = "Generate code"
+                            )
+                        }
+                    }
+                    HorizontalDivider(
+                        thickness = if (isInputFocused || showError) 2.dp else 1.dp,
+                        color = when {
+                            showError -> MaterialTheme.colorScheme.error
+                            isInputFocused -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                    if (showError) {
+                        Text(
+                            text = "Invalid code — must be exactly 6 Base36 characters",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(top = 4.dp)
                         )
                     }
                 }
