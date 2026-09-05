@@ -290,13 +290,13 @@ fun CodeReadyView(
     code: String,
     onStart: () -> Unit
 ) {
-    val codeTextStyle = MaterialTheme.typography.headlineLarge.copy(
+    val codeTextStyle = MaterialTheme.typography.displayLarge.copy(
         fontFamily = FontFamily.Monospace,
         fontWeight = FontWeight.Bold,
         letterSpacing = 0.sp
     )
     // Fixed slot per character so glyph shape (e.g. "1" vs "A") doesn't change spacing
-    val charSlotWidth = 28.dp
+    val charSlotWidth = 36.dp
 
     Box(
         modifier = Modifier
@@ -332,15 +332,15 @@ fun CodeReadyView(
             text = "code:",
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(y = (-34).dp),
-            style = MaterialTheme.typography.bodyMedium,
+                .offset(y = (-40).dp),
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = "tap to start",
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(y = (40).dp),
+                .offset(y = (48).dp),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
