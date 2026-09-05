@@ -327,20 +327,19 @@ fun CodeReadyView(
                 }
             }
         }
-        // Closer to the code without moving the code itself
         Text(
             text = "code:",
             modifier = Modifier
                 .align(Alignment.Center)
                 .offset(y = (-40).dp),
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             text = "tap to start",
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(y = (48).dp),
+                .offset(y = (42).dp),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
